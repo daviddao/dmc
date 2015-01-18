@@ -2,10 +2,10 @@
 # Data Mining Cup Template
 
 # The caret package is used (http://topepo.github.io/caret/index.html)
-#install.packages("caret")
+install.packages("caret")
 library(caret)
-install.packages('party')
-library(party)
+install.packages("e1071")
+library(e1071)
 
 
 # For reasons of traceability you must use a fixed seed
@@ -40,14 +40,24 @@ test_data = read.csv("test.csv", sep=",")
 # 4. Training & Evaluation
 
 # Train a model "model"...
-model <- cforest(as.factor(income) ~ id + age + workclass + rating + education + edu + family_status + occupation + origin + gender,
-               data = training_data, controls=cforest_unbiased(ntree=10, mtry=3))
+
+tc <- trainControl("repeatedcv", number=10, repeats=10, classProbs=TRUE, savePred=T) 
+InTrain<-createDataPartition(y=training_data$income,p=0.3,list=FALSE)
+training1<-training_data[InTrain,]
+
+
+rf_model<-train(income~.,data=training1,method="rf",
+                trControl=trainControl(method="cv",number=5),
+                prox=TRUE,allowParallel=TRUE)
+print(rf_model)
+# Error Rate 15.07%
+print(rf_model$finalModel)
+
 
 ######################################################
 # 5. Predict Classes in Test Data
-predictions <- predict(model, training_data, OOB=TRUE, type="response")
 
-prediction_classes = predict.train(object=model, newdata=test_data, na.action=na.pass)
+prediction_classes = predict.train(object=rf_model, newdata=test_data, na.action=na.pass)
 predictions = data.frame(id=test_data$id, prediction=prediction_classes)
 predictions
 
