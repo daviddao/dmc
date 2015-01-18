@@ -45,14 +45,12 @@ tc <- trainControl("repeatedcv", number=10, repeats=10, classProbs=TRUE, savePre
 InTrain<-createDataPartition(y=training_data$income,p=0.3,list=FALSE)
 training1<-training_data[InTrain,]
 
-
-rf_model<-train(income~.,data=training1,method="rf",
+# Missing family status causes drop from 14 % -> 17%
+rf_model<-train(income~age+gender+family_status+origin+edu+rating+gain+loss+hours_weekly,data=training_data,method="rf",
                 trControl=trainControl(method="cv",number=5),
                 prox=TRUE,allowParallel=TRUE)
 print(rf_model)
-# Error Rate 15.07%
 print(rf_model$finalModel)
-
 
 ######################################################
 # 5. Predict Classes in Test Data
@@ -64,7 +62,7 @@ predictions
 
 ######################################################
 # 6. Export the Predictions
-write.csv(predictions, file="predictions_group_name_number.csv", row.names=FALSE)
+write.csv(predictions, file="predictions_atum_1.csv", row.names=FALSE)
 
 
 ######################################################
