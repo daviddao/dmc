@@ -47,24 +47,59 @@ test_data$edu = ordered(test_data$edu)
 # Interestingly without pay is only once, we remove it
 table(test_data$workclass, useNA="always")
 table(training_data$workclass, useNA="always")
-training_data = training_data[!training_data$workclass == "Without-pay",]
+training_data$workclass = factor(training_data$workclass, labels=c("?","fed","loc","pri","sel","selnot","state","with"))
+test_data$workclass = factor(test_data$workclass, labels=c("?","fed","loc","pri","sel","selnot","state"))
+id = training_data$id[training_data$workclass == 'with']
+training_data = training_data[!(training_data$workclass == 'with'),]
 training_data$workclass <- factor(training_data$workclass)
 
-table(test_data$family_status, useNA="always")
-table(test_data$family_status, useNA="always")
-table(test_data$family_status, useNA="always")
+table(training_data$workclass)
+
+# Gender is nominal
+training_data$gender = factor(training_data$gender, labels=c("w","m"))
+test_data$gender = factor(test_data$gender, labels=c("w","m"))
+
+# Origin is also nominal
+training_data$origin = factor(training_data$origin, labels=c("native american","asian","black","other","white"))
+test_data$origin = factor(test_data$origin, labels=c("native american","asian","black","other","white"))
+
+table(test_data$origin, useNA="always")
+table(training_data$origin, useNA="always")
+
+training_data$origin[(training_data$origin=="native american")] = "other"
+training_data$origin[(training_data$origin=="black")] = "other"
+test_data$origin[(test_data$origin=="native american")] = "other"
+test_data$origin[(test_data$origin=="black")] = "other"
+
+test_data$origin = factor(test_data$origin)
+training_data$origin = factor(training_data$origin)
+table(test_data$origin)
+
+table(test_data$education, useNA="always")
+table(training_data$education, useNA="always")
+
+educationVec <- c("pre-school","pre-school","pre-school","pre-school","pre-school","pre-school","pre-school",
+                 "assoc","assoc","uni","uni","grad","uni","uni","uni","uni")
+
+training_data$education = factor(training_data$education, labels=educationVec)
+test_data$education = factor(test_data$education, labels=educationVec)
+
+table(training_data$income[training_data$education=="grad"])
+      
+table(test_data$relationship, useNA="always")
+table(training_data$relationship, useNA="always")
 
 ######################################################
 # 4. Training & Evaluation
 
 # Train a model "model"...
 
-tc <- trainControl("repeatedcv", number=10, repeats=10, classProbs=TRUE, savePred=T) 
+tc <- trainControl("repeatedcv", number=40, repeats=40, classProbs=TRUE, savePred=T) 
 InTrain<-createDataPartition(y=training_data$income,p=0.3,list=FALSE)
 training1<-training_data[InTrain,]
 
 # Missing family status causes drop from 14 % -> 17%
-rf_model<-train(income~age+gender+origin+as.ordered(edu)+rating+gain+loss+hours_weekly,data=training_data,method="rf",
+rf_model<-train(income~age+as.factor(gender)+as.factor(origin)+as.factor(education)+as.ordered(edu)+rating+gain+loss+hours_weekly,data=training_data,method="rf",
                 trControl=trainControl(method="cv",number=5),
                 prox=TRUE,allowParallel=TRUE)
 print(rf_model)
@@ -80,7 +115,7 @@ predictions
 
 ######################################################
 # 6. Export the Predictions
-write.csv(predictions, file="predictions_atum_2.csv", row.names=FALSE)
+write.csv(predictions, file="predictions_atum_4.csv", row.names=FALSE)
 
 
 ######################################################

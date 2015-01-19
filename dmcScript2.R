@@ -22,7 +22,7 @@ set.seed(42) # do NOT CHANGE this seed
 
 ######################################################
 # 2. Load & Explore the Training Data Set
-training_data = read.csv("training.csv", sep=",")
+training_data = read.csv("training2.csv", sep=",")
 
 # Explore the data set...
 
@@ -31,28 +31,12 @@ training_data = read.csv("training.csv", sep=",")
 # 3. Data Preparation
 # (using both training and test data)
 # do NOT DELETE any instances in the test data
-test_data = read.csv("test.csv", sep=",")
+test_data = read.csv("test3.csv", sep=",")
 test_data
 
 # Prepare the data for training...
 names(training_data)
-
-# Replace N/A with mode
-#test_data$family_status[is.na(test_data$family_status)] = "married"
-
-# data$edu is ordinal
-training_data$edu = ordered(training_data$edu)
-test_data$edu = ordered(test_data$edu)
-
-# Interestingly without pay is only once, we remove it
-table(test_data$workclass, useNA="always")
-table(training_data$workclass, useNA="always")
-training_data = training_data[!training_data$workclass == "Without-pay",]
-training_data$workclass <- factor(training_data$workclass)
-
-table(test_data$family_status, useNA="always")
-table(test_data$family_status, useNA="always")
-table(test_data$family_status, useNA="always")
+names(test_data)
 
 ######################################################
 # 4. Training & Evaluation
@@ -64,7 +48,7 @@ InTrain<-createDataPartition(y=training_data$income,p=0.3,list=FALSE)
 training1<-training_data[InTrain,]
 
 # Missing family status causes drop from 14 % -> 17%
-rf_model<-train(income~age+gender+origin+as.ordered(edu)+rating+gain+loss+hours_weekly,data=training_data,method="rf",
+rf_model<-train(reorder~salutation+value+voucher+gift+points,data=training_data,method="rf",
                 trControl=trainControl(method="cv",number=5),
                 prox=TRUE,allowParallel=TRUE)
 print(rf_model)
@@ -80,7 +64,7 @@ predictions
 
 ######################################################
 # 6. Export the Predictions
-write.csv(predictions, file="predictions_atum_2.csv", row.names=FALSE)
+write.csv(predictions, file="predictionsdmc2_atum_1.csv", row.names=FALSE)
 
 
 ######################################################
